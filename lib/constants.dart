@@ -13,8 +13,6 @@ OutlineInputBorder ttborder = OutlineInputBorder(
 const oinput =
     const OutlineInputBorder(borderSide: BorderSide(color: primaryColor));
 
-// I will explain it later
-
 const emailError = 'Enter a valid email address';
 const requiredField = "This field is required";
 

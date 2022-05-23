@@ -1,4 +1,5 @@
 import 'package:doctor_ui/auth/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -54,18 +55,6 @@ class SignIn extends StatelessWidget {
                   SignInForm(
                     formkey: formkey,
                   ),
-                  SizedBox(
-                    height: defaultPadding * 2,
-                  ),
-                  SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (formkey.currentState!.validate()) {
-                              formkey.currentState!.save();
-                            }
-                          },
-                          child: Text('Sign Up')))
                 ],
               ),
             )),
@@ -75,6 +64,9 @@ class SignIn extends StatelessWidget {
 }
 
 class SignInForm extends StatelessWidget {
+  TextEditingController txt = TextEditingController();
+  TextEditingController pass = TextEditingController();
+
   SignInForm({
     Key? key,
     required this.formkey,
@@ -91,6 +83,7 @@ class SignInForm extends StatelessWidget {
           children: [
             const TextFeild(text: 'Email'),
             TextFormField(
+              controller: txt,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(hintText: 'text@gmail.com'),
               validator: EmailValidator(errorText: 'Use Valid Email'),
@@ -101,12 +94,23 @@ class SignInForm extends StatelessWidget {
             ),
             const TextFeild(text: 'Password'),
             TextFormField(
+              controller: pass,
               obscureText: true,
               decoration: InputDecoration(hintText: '******'),
               validator: passwordValidator,
               onSaved: (passs) => _password = passs!,
               onChanged: (pass) => _password = pass,
             ),
+            SizedBox(
+              height: defaultPadding * 2,
+            ),
+            SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                    onPressed: () {
+                      signIn(txt.text, pass.text);
+                    },
+                    child: Text('Sign Up')))
           ],
         ));
   }
@@ -127,5 +131,21 @@ class TextFeild extends StatelessWidget {
         style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54),
       ),
     );
+  }
+}
+
+void signIn(email, pass) async {
+  try {
+    final credential = await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: pass)
+        .whenComplete(() => ScaffoldMessenger(
+            child: SnackBar(content: Text('Logged In succesfully'))));
+    ;
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      print('No user found for that email.');
+    } else if (e.code == 'wrong-password') {
+      print('Wrong password provided for that user.');
+    }
   }
 }
